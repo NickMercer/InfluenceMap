@@ -33,7 +33,7 @@ namespace Natick.InfluenceMaps
             for (var r = 1; r <= maxRadius; r+= increment)
             {
                 var size = (2 * r) + 1;
-                var newMap = new InfluenceMap(size, size, size/2, size/2);
+                var newMap = new InfluenceMap(size, size);
                 var newStamp = new InfluenceStamp();
 
                 newMap.PropagateInfluenceFromCenter(InfluenceCurve.Linear, 1f);
@@ -78,11 +78,17 @@ namespace Natick.InfluenceMaps
         
         #endregion
 
-        public static void AddInfluenceSource(Vector3 worldPosition, InfluenceMap map, int influence, int radius)
+        public static void AddInfluenceSource(Vector2Int gridPosition, InfluenceMap map, int influence, int radius)
         {
-            var gridPos = new Vector2Int((int) worldPosition.x, (int) worldPosition.z);
             var stampMap = RetrieveInfluenceStamp(MapType.Proximity, radius);
-            map.AddMap(stampMap, gridPos, influence);
+            map.AddMap(stampMap, gridPosition, influence, new Vector2Int(-radius, -radius));
+        }
+
+        public static InfluenceMap CreateSubMap(int width, int height, InfluenceMap largerMap, int startX, int startY)
+        {
+            var subMap = new InfluenceMap(width, height, startX, startY);
+            largerMap.AddIntoMap(subMap, new Vector2Int(startX, startY));
+            return subMap;
         }
     }
 }
