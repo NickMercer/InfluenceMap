@@ -7,13 +7,14 @@ namespace Test
 {
     internal class LayerMapCollection
     {
-        private Dictionary<Vector2Int, Dictionary<int, InfluenceMap>> _worldMaps;
+        private readonly Dictionary<Vector2Int, Dictionary<int, InfluenceMap>> _worldMaps;
         
         private readonly InfluenceMapManager _manager;
 
         public LayerMapCollection(InfluenceMapManager manager)
         {
             _manager = manager;
+            _worldMaps = new Dictionary<Vector2Int, Dictionary<int, InfluenceMap>>();
         }
         
         public void AddMapLayer(int layerId, Vector2Int gridPosition, InfluenceMap map)
@@ -51,6 +52,19 @@ namespace Test
                 return null;
 
             return layer[layerId];
+        }
+
+        public InfluenceMap GetFullMapLayer(int layerId)
+        {
+            var fullMap = new InfluenceMap(_manager.WorldWidthInCells, _manager.WorldHeightInCells, 0, 0,
+                _manager.CellSize);
+            foreach (var subMap in _worldMaps)
+            {
+                var startPosition = subMap.Key * new Vector2Int(_manager.MapWidthInCells, _manager.MapHeightInCells);
+                fullMap.AddMap(subMap.Value[layerId], startPosition, 1f);
+            }
+
+            return fullMap;
         }
     }
 }

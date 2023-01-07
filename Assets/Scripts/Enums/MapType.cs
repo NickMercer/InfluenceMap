@@ -2,6 +2,8 @@
 {
     public enum MapType
     {
-        Proximity
+        Proximity,
+        Threat,
+        Interest
     }
 }

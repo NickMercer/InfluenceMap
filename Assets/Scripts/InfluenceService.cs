@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Natick.InfluenceMaps
 {
@@ -11,59 +8,12 @@ namespace Natick.InfluenceMaps
         private InfluenceCurveDefinitions _curveDefinitions;
         
         private static InfluenceService _inst;
-
-        private static List<InfluenceStamp> _proximityStamps;
         
         private void Awake()
         {
             _inst = this;
-            InitializeStamps();
-        }
-        
-        #region Stamps
-        
-        private void InitializeStamps()
-        {
-            InitializeProximityStamps(12, 1);
         }
 
-        private void InitializeProximityStamps(int maxRadius, int increment)
-        {
-            _proximityStamps = new List<InfluenceStamp>();
-            for (var r = 1; r <= maxRadius; r+= increment)
-            {
-                var size = (2 * r) + 1;
-                var newMap = new InfluenceMap(size, size);
-                var newStamp = new InfluenceStamp();
-
-                newMap.PropagateInfluenceFromCenter(InfluenceCurve.Linear, 1f);
-                newStamp.Radius = r;
-                newStamp.StampType = MapType.Proximity;
-                newStamp.Map = newMap;
-                
-                _proximityStamps.Add(newStamp);
-            }
-        }
-
-        private static InfluenceMap RetrieveInfluenceStamp(MapType mapType, int radius)
-        {
-            switch (mapType)
-            {
-                case MapType.Proximity:
-                    var stamp = _proximityStamps.FirstOrDefault(x => x.Radius == radius);
-                    var map = stamp.Map;
-                    if(map == null)
-                    {
-                        stamp = _proximityStamps.OrderByDescending(x => x.Radius).First();
-                    }
-                    return stamp.Map;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null);
-            }
-        }
-
-        #endregion
-        
         #region Influence Curves
         
         public static bool TryGetCurve(InfluenceCurve curveType, out AnimationCurve curve)
@@ -77,13 +27,7 @@ namespace Natick.InfluenceMaps
         }
         
         #endregion
-
-        public static void AddInfluenceSource(Vector2Int gridPosition, InfluenceMap map, int influence, int radius)
-        {
-            var stampMap = RetrieveInfluenceStamp(MapType.Proximity, radius);
-            map.AddMap(stampMap, gridPosition, influence, new Vector2Int(-radius, -radius));
-        }
-
+        
         public static InfluenceMap CreateSubMap(int width, int height, InfluenceMap largerMap, int startX, int startY)
         {
             var subMap = new InfluenceMap(width, height, startX, startY);
