@@ -1,11 +1,13 @@
-﻿using System;
-using Natick.InfluenceMaps;
+﻿using Natick.InfluenceMaps;
 using UnityEngine;
 
 namespace Test
 {
     public class TestAgent : MonoBehaviour, IInfluenceEntity
     {
+        [field: SerializeField]
+        public int LayerId { get; set; } = 1;
+        
         [field: SerializeField]
         public int ProximityRadius { get; set; } = 0;
      
@@ -44,7 +46,7 @@ namespace Test
 
         public EntityInformation GetEntityInformation()
         {
-            return new ExampleAgentInformation(
+            return new ExampleAgentInformation(LayerId,
                 ProximityRadius, ProximityStrength,
                 ThreatRadius, ThreatStrength,
                 InterestRadius, InterestStrength)

@@ -6,14 +6,17 @@ namespace Test
 {
     public class ExampleAgentInformation : EntityInformation<ExampleAgentInformation>
     {
+        public int Layer { get; set; }
+        
         public KeyValuePair<int, float> Proximity { get; set; }
         
         public KeyValuePair<int, float> Threat { get; set; }
         
         public KeyValuePair<int, float> Interest { get; set; }
         
-        public ExampleAgentInformation(int proximityRadius, float proximityStrength, int threatRadius, float threatStrength, int interestRadius, float interestStrength)
+        public ExampleAgentInformation(int layer, int proximityRadius, float proximityStrength, int threatRadius, float threatStrength, int interestRadius, float interestStrength)
         {
+            Layer = layer;
             Proximity = new KeyValuePair<int, float>(proximityRadius, proximityStrength);
             Threat = new KeyValuePair<int, float>(threatRadius, threatStrength);
             Interest = new KeyValuePair<int, float>(interestRadius, interestStrength);

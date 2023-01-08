@@ -27,6 +27,10 @@ namespace Natick.InfluenceMaps
 
         protected readonly List<EntityNode> EntityNodes = new List<EntityNode>();
 
+        private Dictionary<MapType, List<InfluenceStamp>> _influenceStamps = new Dictionary<MapType, List<InfluenceStamp>>();
+
+        private Dictionary<MapType, LayerMapCollection> _layerMaps = new Dictionary<MapType, LayerMapCollection>();
+        
         protected void Initialize(Vector2 worldSize, float cellSize, Vector2Int mapCount, Vector2 bottomLeft)
         {
             WorldWidthInMeters = worldSize.x;
@@ -58,10 +62,15 @@ namespace Natick.InfluenceMaps
         
         #region Influence Stamps
 
-        protected List<InfluenceStamp> CreateInfluenceStamps(MapType stampType, int maxRadius, int increment,
+        protected void CreateInfluenceStamps(MapType stampType, int maxRadius, int increment,
             InfluenceCurve curve)
         {
-            var stamps = new List<InfluenceStamp>();
+            var alreadyExist = false;
+            if (_influenceStamps.TryGetValue(stampType, out var stamps))
+                alreadyExist = true;
+            else 
+                stamps = new List<InfluenceStamp>();
+            
             for (var r = 1; r <= maxRadius; r+= increment)
             {
                 var size = (2 * r) + 1;
@@ -76,10 +85,23 @@ namespace Natick.InfluenceMaps
                 stamps.Add(newStamp);
             }
 
-            return stamps;
+            if(alreadyExist == false)
+                _influenceStamps.Add(stampType, stamps);
         }
 
-        internal abstract InfluenceMap GetInfluenceStamp(MapType mapType, int radius);
+        internal InfluenceMap GetInfluenceStamp(MapType mapType, int radius)
+        {
+            if(_influenceStamps.TryGetValue(mapType, out var stamps) == false)
+                throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null);
+            
+            var stamp = stamps.FirstOrDefault(x => x.Radius == radius);
+            var map = stamp.Map;
+            if(map == null)
+            {
+                stamp = stamps.OrderByDescending(x => x.Radius).First();
+            }
+            return stamp.Map;
+        }
         
         public void AddInfluenceSource(int layerId, Vector3 sourcePosition, MapType mapType, float influence, int radius)
         {
@@ -123,8 +145,22 @@ namespace Natick.InfluenceMaps
             
             return new Vector2Int(cellX, cellY);
         }
-        
-        internal abstract LayerMapCollection GetLayerMapCollection(MapType mapType);
+
+        protected void AddLayerMapCollection(MapType mapType)
+        {
+            if (_layerMaps.ContainsKey(mapType))
+                return;
+            
+            _layerMaps.Add(mapType, new LayerMapCollection(this));
+        }
+
+        internal LayerMapCollection GetLayerMapCollection(MapType mapType)
+        {
+            if (_layerMaps.TryGetValue(mapType, out var layerMap) == false)
+                throw new ArgumentOutOfRangeException(nameof(mapType), mapType, null);
+
+            return layerMap;
+        }
 
         #endregion
         

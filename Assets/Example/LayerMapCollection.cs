@@ -17,20 +17,6 @@ namespace Test
             _worldMaps = new Dictionary<Vector2Int, Dictionary<int, InfluenceMap>>();
         }
         
-        public void AddMapLayer(int layerId, Vector2Int gridPosition, InfluenceMap map)
-        {
-            if (_worldMaps.TryGetValue(gridPosition, out var layer) == false)
-            {
-                _worldMaps[gridPosition] = new Dictionary<int, InfluenceMap> {{layerId, map}};
-                return;
-            }
-            
-            if (layer.ContainsKey(layerId) == false)
-            {
-                layer[layerId] = map;
-            }
-        }
-        
         public IEnumerable<KeyValuePair<int, InfluenceMap>> GetMapLayers(Vector2Int gridLocation,
             Func<KeyValuePair<int, InfluenceMap>, bool> filter = null)
         {
@@ -51,7 +37,7 @@ namespace Test
             if (_worldMaps.TryGetValue(gridPosition, out var layer) == false)
                 return null;
 
-            return layer[layerId];
+            return layer.TryGetValue(layerId, out var value) ? value : null;
         }
 
         public InfluenceMap GetFullMapLayer(int layerId)
@@ -60,11 +46,29 @@ namespace Test
                 _manager.CellSize);
             foreach (var subMap in _worldMaps)
             {
+                if (subMap.Value.TryGetValue(layerId, out var layer) == false)
+                    continue;
+                
                 var startPosition = subMap.Key * new Vector2Int(_manager.MapWidthInCells, _manager.MapHeightInCells);
-                fullMap.AddMap(subMap.Value[layerId], startPosition, 1f);
+                fullMap.AddMap(layer, startPosition, 1f);
             }
 
             return fullMap;
         }
+        
+        public void AddMapLayer(int layerId, Vector2Int gridPosition, InfluenceMap map)
+        {
+            if (_worldMaps.TryGetValue(gridPosition, out var layer) == false)
+            {
+                _worldMaps[gridPosition] = new Dictionary<int, InfluenceMap> {{layerId, map}};
+                return;
+            }
+            
+            if (layer.ContainsKey(layerId) == false)
+            {
+                layer[layerId] = map;
+            }
+        }
+
     }
 }
