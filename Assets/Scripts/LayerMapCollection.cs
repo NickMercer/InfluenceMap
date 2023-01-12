@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Natick.InfluenceMaps;
 using UnityEngine;
 
-namespace Test
+namespace Natick.InfluenceMaps
 {
     internal class LayerMapCollection
     {
