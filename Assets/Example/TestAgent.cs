@@ -9,22 +9,22 @@ namespace Test
         public int LayerId { get; set; } = 1;
         
         [field: SerializeField]
-        public int ProximityRadius { get; set; } = 0;
+        public int ProximityRadius { get; set; } 
      
         [field: SerializeField]
-        public int ProximityStrength { get; set; } = 0;
+        public int ProximityStrength { get; set; }
 
         [field: SerializeField]
-        public int ThreatRadius { get; set; } = 0;
+        public int ThreatRadius { get; set; }
      
         [field: SerializeField]
-        public int ThreatStrength { get; set; } = 0;
+        public int ThreatStrength { get; set; }
 
         [field: SerializeField]
-        public int InterestRadius { get; set; } = 0;
+        public int InterestRadius { get; set; }
      
         [field: SerializeField]
-        public int InterestStrength { get; set; } = 0;
+        public int InterestStrength { get; set; }
         
         [SerializeField]
         private bool _isRegisterable;

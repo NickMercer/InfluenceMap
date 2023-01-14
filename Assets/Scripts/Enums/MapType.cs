@@ -1,9 +1,18 @@
-﻿namespace Natick.InfluenceMaps
+﻿using System;
+
+namespace Natick.InfluenceMaps
 {
-    public enum MapType
+    [Serializable]
+    public record MapType
     {
-        Proximity,
-        Threat,
-        Interest
+        internal int Id { get; }
+        
+        public string Name { get; }
+        
+        public MapType(string name)
+        {
+            Id = name.GetHashCode();
+            Name = name;
+        }
     }
 }

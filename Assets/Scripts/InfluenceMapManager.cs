@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Test;
 using UnityEngine;
 
 namespace Natick.InfluenceMaps
@@ -9,8 +8,6 @@ namespace Natick.InfluenceMaps
     public abstract class InfluenceMapManager : MonoBehaviour
     {
         internal float CellSize { get; private set; }
-
-        internal int FactionCount { get; private set; }
 
         internal int MapWidthInCells { get; private set; }
         internal int MapHeightInCells { get; private set; }
@@ -22,14 +19,29 @@ namespace Natick.InfluenceMaps
         internal int WorldHeightInCells { get; private set; }
         internal float WorldWidthInMeters { get; private set; }
         internal float WorldHeightInMeters { get; private set; }
+        
+        [Header("Debug Draw")]
+        [SerializeField]
+        private Gradient _influenceMapGradient;
+
+        [SerializeField]
+        private InfluenceMapRenderer _influenceMapRenderer;
+        
+        [SerializeField]
+        private MapType _mapTypeToRender;
+
+        [SerializeField]
+        private int _layerToRender = 1;
 
         private Vector2 _anchorPoint;
 
         protected readonly List<EntityNode> EntityNodes = new List<EntityNode>();
 
-        private Dictionary<MapType, List<InfluenceStamp>> _influenceStamps = new Dictionary<MapType, List<InfluenceStamp>>();
+        private readonly Dictionary<MapType, List<InfluenceStamp>> _influenceStamps = new Dictionary<MapType, List<InfluenceStamp>>();
 
-        private Dictionary<MapType, LayerMapCollection> _layerMaps = new Dictionary<MapType, LayerMapCollection>();
+        private readonly Dictionary<MapType, LayerMapCollection> _layerMaps = new Dictionary<MapType, LayerMapCollection>();
+
+        private readonly Dictionary<int, MapType> _mapTypes = new Dictionary<int, MapType>();
         
         protected void Initialize(Vector2 worldSize, float cellSize, Vector2Int mapCount, Vector2 bottomLeft)
         {
@@ -56,6 +68,18 @@ namespace Natick.InfluenceMaps
         public void UnregisterEntity(IInfluenceEntity entity)
         {
             EntityNodes.RemoveAll(x => x.Entity == entity);
+        }
+        
+        #endregion
+
+        #region MapType Registration
+        
+        protected void RegisterMapTypes(List<MapType> mapTypes)
+        {
+            foreach (var type in mapTypes)
+            {
+                _mapTypes.Add(type.Id, type);
+            }
         }
         
         #endregion
@@ -327,6 +351,34 @@ namespace Natick.InfluenceMaps
                    && worldPosition.x < _anchorPoint.x + WorldWidthInMeters
                    && worldPosition.z >= _anchorPoint.y
                    && worldPosition.z < _anchorPoint.y + WorldHeightInMeters;
+        }
+        
+        #endregion
+        
+        #region Debug Draw
+        
+        protected void DrawMap(MapType mapTypeOverride = null)
+        {
+            var mapLayer = mapTypeOverride ?? _mapTypeToRender;
+            var mapToDraw = GetLayerMapCollection(mapLayer);
+            var proximityMap = mapToDraw.GetFullMapLayer(_layerToRender);
+            var texture = new Texture2D(WorldWidthInCells, WorldHeightInCells, TextureFormat.RGBA32, false);
+            var colorArray = new Color32[WorldWidthInCells * WorldHeightInCells];
+            for (int y = 0; y < WorldHeightInCells; y++)
+            {
+                for (int x = 0; x < WorldWidthInCells; x++)
+                {
+                    var cell = proximityMap.GetValue(new Vector2Int(x, y));
+                    var color = _influenceMapGradient.Evaluate(cell.Normalize(-30, 30));
+                    colorArray[(y * WorldWidthInCells) + x] = color;
+                }
+            }
+
+            texture.SetPixels32(colorArray);
+            texture.Apply();
+            var influenceSprite = Sprite.Create(texture, new Rect(0, 0, WorldWidthInCells, WorldHeightInCells), Vector2.zero);
+            _influenceMapRenderer.SetSprite(influenceSprite, WorldWidthInCells, WorldHeightInCells);
+
         }
         
         #endregion
